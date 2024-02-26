@@ -134,3 +134,4 @@ sleep 2
 
 # Start service and check the logs
 sudo systemctl start seda.service && sudo journalctl -u seda.service -f --no-hostname -o cat
+
