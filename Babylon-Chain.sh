@@ -8,11 +8,11 @@ function colors {
 }
 
 function logo {
-  curl -s https://raw.githubusercontent.com/Creator-CB/FILES/main/TDM-Crypto.sh | bash
+  curl -s https://raw.githubusercontent.com/DOUBLE-TOP/tools/main/doubletop.sh | bash
 }
 
 function line {
-  echo -e “${RED}——————————————————————————————————————${NORMAL}"
+  echo -e "${GREEN}-----------------------------------------------------------------------------${NORMAL}"
 }
 
 function get_nodename {
@@ -21,7 +21,7 @@ function get_nodename {
     # source $HOME/.profile
     # sleep 1
     # if [ ! ${BABYLON_MONIKER} ]; then
-    echo -e "${GREEN}Name your node:${NORMAL}"
+    echo -e "${YELLOW}Введите имя ноды(придумайте)${NORMAL}"
     line
     read BABYLON_MONIKER
     echo 'export BABYLON_MONIKER='$BABYLON_MONIKER >> $HOME/.profile
@@ -29,8 +29,11 @@ function get_nodename {
 }
 
 function install_go {
-    bash <(curl -s https://raw.githubusercontent.com/Creator-CB/FILES/main/go.sh)
-    source $HOME/.profile
+    curl -Ls https://go.dev/dl/go1.20.14.linux-amd64.tar.gz | sudo tar -xzf - -C /usr/local
+eval $(echo 'export PATH=$PATH:/usr/local/go/bin' | sudo tee /etc/profile.d/golang.sh)
+eval $(echo 'export PATH=$PATH:$HOME/go/bin' | tee -a $HOME/.profile)    
+
+source $HOME/.profile
     sleep 1
 }
 
@@ -39,7 +42,7 @@ function source_build_git {
     rm -rf babylon
     git clone https://github.com/babylonchain/babylon.git
     cd babylon
-      git checkout v0.8.3
+    git checkout v0.8.3
 
     make build
 
@@ -79,11 +82,11 @@ sudo systemctl enable babylon.service
 }
 
 function init_chain {
-    babylond config chain-id bbn-test-2
+    babylond config chain-id bbn-test-3
     babylond config keyring-backend test
     babylond config node tcp://localhost:16457
 
-    babylond init $BABYLON_MONIKER --chain-id bbn-test-2
+    babylond init $MONIKER --chain-id bbn-test-3
 
     curl -Ls https://snapshots.kjnodes.com/babylon-testnet/genesis.json > $HOME/.babylond/config/genesis.json
     curl -Ls https://snapshots.kjnodes.com/babylon-testnet/addrbook.json > $HOME/.babylond/config/addrbook.json
@@ -93,16 +96,16 @@ function init_chain {
     sed -i -e "s|^minimum-gas-prices *=.*|minimum-gas-prices = \"0.00001ubbn\"|" $HOME/.babylond/config/app.toml
 
     sed -i \
-    -e 's|^pruning *=.*|pruning = "custom"|' \
-    -e 's|^pruning-keep-recent *=.*|pruning-keep-recent = "100"|' \
-    -e 's|^pruning-keep-every *=.*|pruning-keep-every = "0"|' \
-    -e 's|^pruning-interval *=.*|pruning-interval = "19"|' \
-    $HOME/.babylond/config/app.toml
-
-    sed -i -e "s|^timeout_commit *=.*|timeout_commit = \"10s\"|" $HOME/.babylond/config/config.toml
+  -e 's|^pruning *=.*|pruning = "custom"|' \
+  -e 's|^pruning-keep-recent *=.*|pruning-keep-recent = "100"|' \
+  -e 's|^pruning-keep-every *=.*|pruning-keep-every = "0"|' \
+  -e 's|^pruning-interval *=.*|pruning-interval = "19"|' \
+  $HOME/.babylond/config/app.toml
 
     sed -i -e "s%^proxy_app = \"tcp://127.0.0.1:26658\"%proxy_app = \"tcp://127.0.0.1:16458\"%; s%^laddr = \"tcp://127.0.0.1:26657\"%laddr = \"tcp://127.0.0.1:16457\"%; s%^pprof_laddr = \"localhost:6060\"%pprof_laddr = \"localhost:16460\"%; s%^laddr = \"tcp://0.0.0.0:26656\"%laddr = \"tcp://0.0.0.0:16456\"%; s%^prometheus_listen_addr = \":26660\"%prometheus_listen_addr = \":16466\"%" $HOME/.babylond/config/config.toml
+
     sed -i -e "s%^address = \"tcp://localhost:1317\"%address = \"tcp://0.0.0.0:16417\"%; s%^address = \":8080\"%address = \":16480\"%; s%^address = \"localhost:9090\"%address = \"0.0.0.0:16490\"%; s%^address = \"localhost:9091\"%address = \"0.0.0.0:16491\"%; s%:8545%:16445%; s%:8546%:16446%; s%:6065%:16465%" $HOME/.babylond/config/app.toml
+
 }
 
 function download_snapshot {
@@ -116,13 +119,21 @@ function start {
 
 function main {
     colors
+    line
     logo
+    line
     get_nodename
+    line
     install_go
     source_build_git
+    line
     systemd
+    line
     init_chain
+    line
     download_snapshot
+    line
     start
+}
 
 main
